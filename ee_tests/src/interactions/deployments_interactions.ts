@@ -8,7 +8,7 @@ import { ReleaseStrategy } from '../support/release_strategy';
 import { FeatureLevelUtils } from '../support/feature_level';
 import { MainDashboardPage } from '../page_objects/main_dashboard.page';
 import { PageOpenMode } from '../page_objects/base.page';
-import { PipelinesInteractionsFactory } from './pipelines_interactions';
+import { SpaceDashboardInteractionsFactory } from './space_dashboard_interactions';
 import { browser } from 'protractor';
 
 export abstract class DeploymentsInteractionsFactory {
@@ -88,10 +88,14 @@ abstract class AbstractDeploymentsInteractions implements DeploymentsInteraction
     public async openDeploymentsPage(mode: PageOpenMode) {
         logger.info('Open deployments page');
         if (mode === PageOpenMode.UseMenu) {
-            let pipelinesInteractions =
-                PipelinesInteractionsFactory.create(this.strategy, this.spaceName);
-            await pipelinesInteractions.openPipelinesPage(mode);
-            await pipelinesInteractions.showDeployments();
+            // let pipelinesInteractions =
+            //     PipelinesInteractionsFactory.create(this.strategy, this.spaceName);
+            // await pipelinesInteractions.openPipelinesPage(mode);
+            // await pipelinesInteractions.showDeployments();
+            let dashboardInteractions =
+                SpaceDashboardInteractionsFactory.create(this.strategy, this.spaceName);
+            await dashboardInteractions.openSpaceDashboardPage(PageOpenMode.UseMenu);
+            await dashboardInteractions.openDeploymentsPage();
             await this.spaceDeploymentsPage.open();
         } else {
             await this.spaceDeploymentsPage.open(mode);

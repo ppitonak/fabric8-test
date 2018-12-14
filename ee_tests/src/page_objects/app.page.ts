@@ -45,7 +45,7 @@ export class AppPage extends BasePage {
   }
 
   /* Helper function to create a new OSIO space */
-  async createNewSpace(spaceName: string): Promise<SpaceDashboardPage> {
+  async createNewSpace(spaceName: string): Promise<OldSpaceDashboardPage> {
     await this.header.recentItemsDropdown.selectCreateSpace();
 
     // TODO: create a new BaseFragment for the model Dialog
@@ -61,13 +61,13 @@ export class AppPage extends BasePage {
 
     await browser.wait(until.urlContains(spaceName), timeouts.DEFAULT_WAIT, 'URL contains space name');
 
-    let spaceDashboard = new SpaceDashboardPage(spaceName);
+    let spaceDashboard = new OldSpaceDashboardPage(spaceName);
     await spaceDashboard.open();
     return spaceDashboard;
   }
 
   /* Helper function to create a new OSIO space */
-  async createNewSpaceByLauncher(spaceName: string): Promise<SpaceDashboardPage> {
+  async createNewSpaceByLauncher(spaceName: string): Promise<OldSpaceDashboardPage> {
     await this.header.recentItemsDropdown.selectCreateSpace();
 
     // https://github.com/fabric8io/fabric8-test/issues/1201
@@ -84,7 +84,7 @@ export class AppPage extends BasePage {
 
     await browser.wait(until.urlContains(spaceName), timeouts.DEFAULT_WAIT, 'URL contains space name');
 
-    let spaceDashboard = new SpaceDashboardPage(spaceName);
+    let spaceDashboard = new OldSpaceDashboardPage(spaceName);
     await spaceDashboard.open();
     return spaceDashboard;
   }
@@ -148,6 +148,7 @@ export class AppPage extends BasePage {
 // NOTE: imported here otherwise AppPage will not be defined when
 // UserProfilePage that inherts AppPage is created
 import { UserProfilePage } from './user_profile.page';
-import { UserSettingsPage } from './user_settings.page'; import { SpaceDashboardPage } from './space_dashboard.page';
+import { UserSettingsPage } from './user_settings.page';
+import { OldSpaceDashboardPage } from './old_space_dashboard.page';
 import { LauncherInteractionsFactory } from '../interactions/launcher_interactions';
 import { Quickstart } from '../support/quickstart';

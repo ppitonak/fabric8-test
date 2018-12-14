@@ -3,6 +3,7 @@ import { windowManager } from '../support/window_manager';
 import { CodebasesPage } from '../page_objects/space_codebases.page';
 import { SpaceDashboardInteractionsFactory } from './space_dashboard_interactions';
 import { PageOpenMode } from '../page_objects/base.page';
+import { browser } from 'protractor';
 
 export abstract class CodebasesInteractionsFactory {
 
@@ -43,11 +44,12 @@ abstract class AbstractCodebasesInteractions implements CodebasesInteractions {
     public async abstract createAndOpenWorkspace(): Promise<string>;
 
     public async openCodebasesPage(mode: PageOpenMode): Promise<void> {
-        logger.info('Open codebases page');
+        logger.info(`Open codebases page in ${PageOpenMode[mode]} mode`);
         if (mode === PageOpenMode.UseMenu) {
             let dashboardInteractions = SpaceDashboardInteractionsFactory.create(this.strategy, this.spaceName);
-            await dashboardInteractions.openSpaceDashboardPage(mode);
+            // await dashboardInteractions.openSpaceDashboardPage(mode);
             await dashboardInteractions.openCodebasesPage();
+            await browser.sleep(10000);
             await this.page.open();
         } else {
             await this.page.open(mode);

@@ -6,7 +6,7 @@ import * as timeouts from '../support/timeouts';
 import { specContext } from '../support/spec_context';
 import { windowManager } from '../support/window_manager';
 import { screenshotManager } from '../support/screenshot_manager';
-import { DeployedApplicationInfo, Pipeline, SpaceDashboardPage } from '../page_objects/space_dashboard.page';
+import { DeployedApplicationInfo, OldSpaceDashboardPage, Pipeline } from '../page_objects/old_space_dashboard.page';
 import { BuildStatus } from '../support/build_status';
 import { ReleaseStrategy } from '../support/release_strategy';
 import { AccountHomeInteractionsFactory } from './account_home_interactions';
@@ -43,6 +43,8 @@ export interface SpaceDashboardInteractions {
     openCodebasesPage(): void;
 
     openPipelinesPage(): void;
+
+    openDeploymentsPage(): void;
 
     openPlannerPage(): void;
 
@@ -86,6 +88,8 @@ abstract class AbstractSpaceDashboardInteractions implements SpaceDashboardInter
 
     public abstract async openPipelinesPage(): Promise<void>;
 
+    public abstract async openDeploymentsPage(): Promise<void>;
+
     public abstract async openPlannerPage(): Promise<void>;
 
     public abstract async createQuickstart(name: string, quickstart: Quickstart, strategy: string): Promise<void>;
@@ -116,14 +120,14 @@ abstract class AbstractSpaceDashboardInteractions implements SpaceDashboardInter
 
 class ReleasedSpaceDashboardInteractions extends AbstractSpaceDashboardInteractions {
 
-    protected spaceDashboardPage: SpaceDashboardPage;
+    protected spaceDashboardPage: OldSpaceDashboardPage;
 
     protected strategy: string;
 
     constructor(strategy: string, spaceName: string) {
         super(spaceName);
         this.strategy = strategy;
-        this.spaceDashboardPage = new SpaceDashboardPage(spaceName);
+        this.spaceDashboardPage = new OldSpaceDashboardPage(spaceName);
     }
 
     public async openSpaceDashboardPage(mode: PageOpenMode): Promise<void> {
@@ -149,6 +153,10 @@ class ReleasedSpaceDashboardInteractions extends AbstractSpaceDashboardInteracti
         await this.spaceDashboardPage.getPipelinesCard().then(async function (card) {
             await card.openPipelinesPage();
         });
+    }
+
+    public async openDeploymentsPage() {
+        // deployments page is not yet released
     }
 
     public async openPlannerPage(): Promise<void> {
@@ -286,6 +294,25 @@ class ReleasedSpaceDashboardInteractions extends AbstractSpaceDashboardInteracti
 
 class BetaSpaceDashboardInteractions extends ReleasedSpaceDashboardInteractions {
 
+    public async verifyCodebases(repoName: string): Promise<void> {
+        try {
+            logger.info('Verify codebase ' + repoName);
+            let codebasesCard = await this.spaceDashboardPage.getCodebaseCard();
+            await browser.wait(async function () {
+                return (await codebasesCard.getCount()) === 1;
+            }, timeouts.DEFAULT_WAIT, 'Codebases are loaded');
+            expect(await codebasesCard.getCount()).toBe(1, 'number of codebases on page');
+
+            let githubName = specContext.getGitHubUser();
+            let codebases = await codebasesCard.getCodebases();
+            expect(codebases.length).toBe(1, 'number of codebases');
+            expect(codebases[0]).toBe('https://github.com/' + githubName + '/' + repoName);
+        } catch (e) {
+            logger.error('Verify codebases failed ', e);
+            throw 'Verify codebases failed';
+        }
+    }
+
     public async verifyWorkItems(...items: string[]): Promise<void> {
         let workItemsCard = await this.spaceDashboardPage.getWorkItemsCard();
 
@@ -300,6 +327,24 @@ class BetaSpaceDashboardInteractions extends ReleasedSpaceDashboardInteractions 
         for (let i = 0; i < items.length; i++) {
             expect(workItems[i]).toBe(items[i], 'Work item name');
         }
+    }
+
+    public async openCodebasesPage() {
+        logger.info('Open codebases page');
+        let navMenu = await this.spaceDashboardPage.getNavigationMenu();
+        await navMenu.openCodebases();
+    }
+
+    public async openPipelinesPage() {
+        logger.info('Open pipelines page');
+        let navMenu = await this.spaceDashboardPage.getNavigationMenu();
+        await navMenu.openPipelines();
+    }
+
+    public async openDeploymentsPage() {
+        logger.info('Open deployments page');
+        let navMenu = await this.spaceDashboardPage.getNavigationMenu();
+        await navMenu.openDeployments();
     }
 
     public async openPlannerPage(): Promise<void> {
